@@ -179,7 +179,7 @@ T
 Toolbox<T>::power(T base, T expt, T init)
 {
     long long res = init;
-    while (base) {
+    while (expt) {
         if (expt & 1) {
             res *= base;
         }
