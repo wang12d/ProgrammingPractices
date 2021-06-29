@@ -25,6 +25,7 @@ public:
     static void timer();
     static void timeCost();
     static bool isPrime(const T&);
+    static T tonelliShanks(T, T);
 private:
     static struct timeval begin;
 };

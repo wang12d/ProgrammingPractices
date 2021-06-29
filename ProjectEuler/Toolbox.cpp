@@ -169,6 +169,9 @@ Toolbox<T>::CRT(const std::vector<T>& coprimes, const std::vector<T>& moduli)
       for (auto i = 0; i < sz; ++i) {
             p = prod / coprimes[i];
             d = extendGCD(p, coprimes[i], &inv, &tmp);
+            while (inv < 0) {
+                inv += coprimes[i];
+            }
             res = (res + p*inv*moduli[i] % prod) % prod;
       }
       return (res + prod) % prod;
@@ -178,7 +181,7 @@ template<typename T>
 T
 Toolbox<T>::power(T base, T expt, T init)
 {
-    long long res = init;
+    T res = init;
     while (expt) {
         if (expt & 1) {
             res *= base;
@@ -193,7 +196,7 @@ template<typename T>
 T
 Toolbox<T>::powerWithMOD(T base, T expt, const T& m, T init)
 {
-    long long res = init;
+    T res = init;
     while (expt) {
         if (expt & 1) {
             res = (base * res) % m;
@@ -204,6 +207,36 @@ Toolbox<T>::powerWithMOD(T base, T expt, const T& m, T init)
     return res;
 }
 
+template<typename T>
+T // Tonelli Shanks algorithm computes x such that x^2 = n (mod q) where q is a prime
+Toolbox<T>::tonelliShanks(T n, T q)
+{
+    T Q = q, S = 0;
+    Q--;
+    while (Q % 2 == 0) {
+        S++; Q /= 2;
+    }
+    // Find the non-residual
+    T z = 2;
+    for (; ; z++) {
+        if (Toolbox<T>::powerWithMOD(z, (q-1)/2, q) == (q-1)) break;
+    }
+    T M = S; T c = Toolbox<T>::powerWithMOD(z, Q, q);
+    T t = Toolbox<T>::powerWithMOD(n, Q, q); T R = powerWithMOD(n, (Q+1) / 2, q);
+    while (1) {
+        if (t == 0) return 0;
+        if (t == 1) return R;
+        T i = 1;
+        for (; i < M; ++i) {
+            if (Toolbox<T>::powerWithMOD(t, Toolbox<T>::power(2, i), q) == 1) {
+                break;
+            }
+        }
+        T b = Toolbox<T>::powerWithMOD(c, Toolbox<T>::power(2, M-i-1), q);
+        M = i; c = b*b%q; t = t*c%q; R = R*b%q;
+    }
+    exit(-1);
+}
 
 template class Toolbox<int>;
 template class Toolbox<unsigned int>;
