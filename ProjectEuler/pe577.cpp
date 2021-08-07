@@ -8,7 +8,7 @@ typedef int64_t Long;
 int
 main(int argc, char** argv)
 {
-    Toolbox::timer();
+    Toolbox<int>::timer();
     Int n = 12345;
     if (argc > 1) {
        sscanf(argv[1], "%d", &n);
@@ -27,5 +27,5 @@ main(int argc, char** argv)
         ans += hexagon;
     }
     cout << ans << endl;
-    Toolbox::timeCost();
+    Toolbox<int>::timeCost();
 }
