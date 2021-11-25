@@ -46,7 +46,7 @@ void generate_47_smooth()
 int
 main(int argc, char** argv)
 {
-    Toolbox::timer();
+    Toolbox<int>::timer();
     generate_47_smooth();
     long long sum = 1;
     for (auto i = p_smooth.begin(); i != p_smooth.end(); ++i) {
@@ -56,5 +56,5 @@ main(int argc, char** argv)
         }
     }
     std::cout << sum << std::endl;
-    Toolbox::timeCost();
+    Toolbox<int>::timeCost();
 }
