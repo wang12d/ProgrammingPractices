@@ -1,111 +1,83 @@
-/**
- * Project euler 266
- * 找到最大的小于等于sqrt(n)的因子
- */
-
-
 #include <bits/stdc++.h>
-#include <string.h>
+#include "Toolbox.h"
+
 using namespace std;
+using ull = unsigned long long;
+using tll = Toolbox<ull>;
 
-const int n = 190;
-const double ESP = 1e-9;
-long M = 10000000000000000L;
-vector<int> primes;	// 用来保存素数
-// vector<long> p_factor;	// 用来构成乘数的因子
-int number[190 + 1];
+ull bound = 190;
+const double EPS = 1e-12;
+const ull M{static_cast<ull>(1e16)};
 
-// 采用素数筛方法找到1~n的素数
-void sieve()
+int 
+main(int argc, char** argv)
 {
-	memset(number, 1, sizeof(number));
-	number[0] = number[1] = 0;
-	int i, j;	// 循环指针
-	for (i = 2; i*i <= n; ++i) {
-		if (number[i]) {
-			for (j = i*i; j <= n; j += i) {
-				number[j] = 0;
+	tll::timer();
+	using pdu = pair<double, ull>;
+	if (argc > 1) {
+		sscanf(argv[1], "%llu", &bound);
+	}
+
+	vector<ull> primes{tll::findPrimes(bound)};
+	double square{0.0};
+	for_each(begin(primes), end(primes), [&square](const auto& p) {
+		square += log(p);
+	});
+	square *= 0.5;
+
+	ull size{primes.size()};
+	ull left_size{size>>1}, right_size{size-(size>>1)};
+	vector<pdu> left_half(1ull << left_size);
+	vector<pdu> right_half(1ull << right_size);
+
+	auto add_elements = [&primes] (const auto& l_size, const auto& l_offset, vector<pdu>& l_arr) {
+		for (auto i{0}; i < (1 << l_size); ++i) {
+			double val{0.0};
+			for (auto j{0}; j < l_size; ++j) {
+				if ((i >> j) & 1) {
+					val += log(primes.at(j+l_offset));
+				}
+			}
+			l_arr.at(i) = {val, i};
+		}
+	};
+
+	auto comp = [](const pdu& a, const pdu& b) {
+		return a.first < b.first;
+	};
+
+	add_elements(left_size, 0, left_half);
+	add_elements(right_size, left_size, right_half);
+
+	sort(begin(left_half), end(left_half), comp);
+	sort(begin(right_half), end(right_half), comp);
+
+	ull left_mask{0}, right_mask{0};
+	double diff{1e10};
+	for (auto& p: left_half) {
+		auto lo{lower_bound(begin(right_half), end(right_half), pdu{square-p.first, p.second}, comp)};
+		if (lo != begin(right_half)) {
+			lo--;
+			if (square-p.first-lo->first < diff) {
+				left_mask = p.second; right_mask = lo->second;
+				diff = square-p.first-lo->first;
 			}
 		}
 	}
 
-	for (i = 0; i <= n; ++i) {
-		if (number[i]) {
-			primes.push_back(i);
+	ull ans{1};
+
+	auto calculate_ans = [&primes,  &ans](const auto& l_size, const auto& l_offset, const auto& l_val) {
+		for (auto i{0}; i < l_size; ++i) {
+			if ((l_val >> i) & 1) {
+				ans = ans * primes.at(i+l_offset) % M;
+			}
 		}
-	}
+	};
 
-}
+	calculate_ans(left_size, 0, left_mask);
+	calculate_ans(right_size, left_size, right_mask);
 
-
-// 采用贪心算法搜寻最大的因子
-// 每次将最大的素数因子放到里面，如果放不下，则将下一个放到里面
-void calcu()
-{
-	int size = primes.size();
-	int i;
-	double logs[size];
-	double total = 0.0; 	// 总的素数乘积
-	double taken_log;
-
-	for (i = 0; i < size; ++i) {
-		taken_log = log(primes[i]);
-		total += taken_log;
-		logs[i] = taken_log;
-	}
-	double half_total = total / 2;		// 取根号
-	vector<long> p_factor1;
-	vector<long> p_factor2;
-	vector<long> p_factor3;
-	double half_back = half_total;
-	double total_back = total;
-
-	for (i = size - 1; i >= 0; --i) {
-		taken_log = logs[i];
-		if (half_back - taken_log > ESP) {
-			p_factor1.push_back(primes[i]);
-			half_back -= taken_log;
-		}
-
-		if (total_back - half_total > ESP) {
-			p_factor2.push_back(primes[i]);
-			total_back -= taken_log;
-		}
-			
-	}
-
-	for (i = 0; i < size; ++i) {
-		taken_log = logs[i];
-		if (half_total - taken_log > ESP) {
-			p_factor3.push_back(primes[i]);
-			half_total -= taken_log;
-		}
-	}
-
-	long ret = 1;
-	size = p_factor1.size();
-	for (i = 0; i < size; ++i) {
-		ret = ((ret % M) * p_factor1[i]) % M;
-	}
-	cout << ret << endl;
-
-	ret = 1;
-	size = p_factor2.size();
-	for (i = 0; i < size; ++i) {
-		ret = ((ret % M) * p_factor2[i]) % M;
-	}
-	cout << ret << endl;
-
-	ret = 1;
-	size = p_factor3.size();
-	for (i = 0; i < size; ++i) {
-		ret = ((ret % M) * p_factor3[i]) % M;
-	}
-	cout << ret << endl;
-}
-
-int main(void)
-{
-	sieve();
-	calcu();
+	cout << ans << endl;
+	tll::timeCost();	
 }
