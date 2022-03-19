@@ -244,3 +244,4 @@ template class Toolbox<unsigned long>;
 template class Toolbox<unsigned long long>;
 template class Toolbox<long>;
 template class Toolbox<long long>;
+template class Toolbox<__int128_t>;
