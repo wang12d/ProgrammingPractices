@@ -238,6 +238,7 @@ Toolbox<T>::tonelliShanks(T n, T q)
     exit(-1);
 }
 
+
 template class Toolbox<int>;
 template class Toolbox<unsigned int>;
 template class Toolbox<unsigned long>;
